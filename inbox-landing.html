@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=414, initial-scale=1.0" />
+  <title>Inbox / List Page / Open</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px 0;
+      font-family: -apple-system, 'SF Pro Text', 'SF Pro', 'Inter', sans-serif;
+    }
+
+    .phone {
+      width: 414px;
+      height: 896px;
+      background: #fff;
+      position: relative;
+      overflow: hidden;
+      border-radius: 44px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    /* Avatar circles */
+    .avatar {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 590;
+      color: white;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    /* Message badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 500;
+      color: white;
+      margin-left: 4px;
+    }
+
+    /* Tab bar bottom */
+    .tab-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 414px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid #e5e5e5;
+    }
+
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      flex: 1;
+    }
+
+    .tab-icon {
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .tab-label {
+      font-size: 10px;
+      line-height: 1;
+    }
+
+    /* Separator line */
+    .separator {
+      height: 1px;
+      background: linear-gradient(to right, transparent, #dbdbdb 10%, #dbdbdb 90%, transparent);
+      width: 100%;
+    }
+
+    /* FAB button */
+    .fab {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      background: white;
+      border-radius: 54px;
+      border: 1px solid #f4f6f7;
+      box-shadow: 6px 6px 20px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      left: 325px;
+      top: 724px;
+      cursor: pointer;
+    }
+
+    .fab svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    /* Message row */
+    .msg-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .msg-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .msg-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+
+    .msg-name-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .msg-name {
+      font-size: 16px;
+      color: #212121;
+      white-space: nowrap;
+    }
+
+    .msg-name.bold {
+      font-weight: 700;
+    }
+
+    .msg-time {
+      font-size: 14px;
+      color: #8a898e;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .msg-preview {
+      font-size: 14px;
+      color: #212121;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .msg-sub {
+      font-size: 14px;
+      color: #8a898e;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .reply-icon {
+      font-size: 12px;
+      color: #8a898e;
+    }
+
+    /* Slider tabs */
+    .slider-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 20px;
+      position: relative;
+    }
+
+    .slider-tab {
+      font-size: 18px;
+      font-weight: 400;
+      color: #212121;
+      padding: 0 10px 8px 0;
+      margin-right: 30px;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+    }
+
+    .slider-tab.active {
+      font-weight: 700;
+      color: #1976d2;
+      border-bottom: 2px solid #1976d2;
+    }
+
+    .home-indicator {
+      width: 134px;
+      height: 5px;
+      background: #212121;
+      border-radius: 100px;
+      margin: 0 auto;
+      margin-bottom: 8px;
+      margin-top: 10px;
+    }
+
+    /* Dark overlay */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 40;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .overlay.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* Bottom sheet */
+    .bottom-sheet {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 414px;
+      background: white;
+      border-radius: 20px 20px 0 0;
+      z-index: 45;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      max-height: 808px;
+      display: flex;
+      flex-direction: column;
+    }
+    .bottom-sheet.open {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 40px;
+      height: 4px;
+      background: #dbdbdb;
+      border-radius: 100px;
+      margin: 12px auto 0;
+      flex-shrink: 0;
+    }
+
+    .sheet-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 20px 0;
+    }
+
+    .sheet-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      font-size: 16px;
+      color: #212121;
+      cursor: pointer;
+      line-height: 22px;
+    }
+    .sheet-item.active {
+      color: #1976d2;
+      font-weight: 700;
+    }
+    .sheet-item-count {
+      font-size: 16px;
+      color: #8a898e;
+      font-weight: 400;
+    }
+
+    .sheet-new-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      font-size: 16px;
+      color: #212121;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 -1px 0 #f0f0f0;
+    }
+
+    .sheet-footer {
+      flex-shrink: 0;
+    }
+
+    /* Filter drawer */
+    .filter-drawer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 414px;
+      height: 896px;
+      background: white;
+      z-index: 50;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .filter-drawer.open {
+      transform: translateX(0);
+    }
+
+    .filter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      cursor: pointer;
+    }
+
+    .filter-row:active {
+      background: #f9f9f9;
+    }
+
+    .filter-label {
+      font-size: 16px;
+      color: #212121;
+      font-weight: 400;
+    }
+
+    .filter-value-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-value {
+      font-size: 16px;
+      color: #8a898e;
+    }
+
+    .filter-chevron {
+      font-size: 14px;
+      color: #8a898e;
+    }
+
+    .filter-separator {
+      height: 0.5px;
+      background: #dbdbdb;
+      margin: 0 20px;
+    }
+
+    .filter-icon-btn {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Switch Reports full-screen */
+    .switch-reports-drawer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 414px;
+      height: 896px;
+      background: #f5f5f5;
+      z-index: 75;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .switch-reports-drawer.open {
+      transform: translateX(0);
+    }
+
+    .sr-section-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: #8a898e;
+      letter-spacing: 0.8px;
+      padding: 20px 20px 8px;
+      text-transform: uppercase;
+      background: #f5f5f5;
+    }
+    .sr-item {
+      background: white;
+      padding: 18px 20px;
+      font-size: 17px;
+      color: #212121;
+      font-weight: 400;
+      border-bottom: 0.5px solid #e5e5e5;
+      cursor: pointer;
+    }
+    .sr-item.active {
+      color: #1976d2;
+      font-weight: 500;
+    }
+    .sr-item:active {
+      background: #f0f0f0;
+    }
+
+    /* Reports screen */
+    .reports-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 414px;
+      height: 896px;
+      background: white;
+      z-index: 60;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+    .reports-screen.open {
+      transform: translateX(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- Status Bar -->
+    <div style="position:absolute;top:0;left:0;width:414px;height:44px;background:white;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:10;">
+      <span style="font-size:17px;font-weight:600;color:#212121;letter-spacing:-0.41px;">9:41</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <!-- Signal -->
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+          <rect x="0" y="8" width="3" height="4" rx="1" fill="#212121"/>
+          <rect x="4" y="5.5" width="3" height="6.5" rx="1" fill="#212121"/>
+          <rect x="8" y="3" width="3" height="9" rx="1" fill="#212121"/>
+          <rect x="12" y="0.5" width="3" height="11.5" rx="1" fill="#212121"/>
+        </svg>
+        <!-- Wifi -->
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+          <path d="M8.5 9.5C9.05 9.5 9.5 9.95 9.5 10.5C9.5 11.05 9.05 11.5 8.5 11.5C7.95 11.5 7.5 11.05 7.5 10.5C7.5 9.95 7.95 9.5 8.5 9.5Z" fill="#212121"/>
+          <path d="M8.5 6.5C9.9 6.5 11.15 7.1 12.02 8.05L13.44 6.63C12.19 5.3 10.44 4.5 8.5 4.5C6.56 4.5 4.81 5.3 3.56 6.63L4.98 8.05C5.85 7.1 7.1 6.5 8.5 6.5Z" fill="#212121"/>
+          <path d="M8.5 3.5C10.82 3.5 12.91 4.49 14.38 6.1L15.8 4.68C13.95 2.7 11.36 1.5 8.5 1.5C5.64 1.5 3.05 2.7 1.2 4.68L2.62 6.1C4.09 4.49 6.18 3.5 8.5 3.5Z" fill="#212121"/>
+        </svg>
+        <!-- Battery -->
+        <svg width="28" height="13" viewBox="0 0 28 13" fill="none">
+          <rect x="0.5" y="0.5" width="23" height="12" rx="3.5" stroke="#212121" stroke-opacity="0.35"/>
+          <rect x="2" y="2" width="20" height="9" rx="2" fill="#212121"/>
+          <path d="M25 4.5V8.5C25.83 8.22 26.5 7.44 26.5 6.5C26.5 5.56 25.83 4.78 25 4.5Z" fill="#212121" fill-opacity="0.4"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Top Nav -->
+    <div style="position:absolute;top:54px;left:0;width:414px;background:white;padding:0 20px;z-index:9;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0;">
+        <div style="display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="openSheet()">
+          <span id="headerTitle" style="font-size:28px;font-weight:700;color:#212121;">Messages</span>
+          <span style="font-size:16px;color:#212121;">&#8964;</span>
+        </div>
+        <div style="display:flex;gap:16px;align-items:center;">
+          <!-- Search icon -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="7" stroke="#212121" stroke-width="1.8"/>
+            <path d="M16.5 16.5L21 21" stroke="#212121" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <!-- Filter icon -->
+          <div class="filter-icon-btn" onclick="openFilter()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M4 6h16" stroke="#212121" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M4 12h16" stroke="#212121" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M4 18h16" stroke="#212121" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="8" cy="6" r="2.5" fill="white" stroke="#212121" stroke-width="1.6"/>
+              <circle cx="16" cy="12" r="2.5" fill="white" stroke="#212121" stroke-width="1.6"/>
+              <circle cx="10" cy="18" r="2.5" fill="white" stroke="#212121" stroke-width="1.6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Open / Closed Tabs -->
+    <div style="position:absolute;top:106px;left:0;width:414px;background:white;z-index:8;">
+      <div style="display:flex;padding:0 20px;gap:40px;">
+        <div style="font-size:18px;font-weight:700;color:#1976d2;padding-bottom:8px;border-bottom:2.5px solid #1976d2;cursor:pointer;">Open</div>
+        <div style="font-size:18px;font-weight:400;color:#212121;padding-bottom:8px;border-bottom:2.5px solid transparent;cursor:pointer;">Closed</div>
+      </div>
+      <!-- Divider with indicator -->
+      <div style="height:1px;background:#dbdbdb;position:relative;">
+        <div style="position:absolute;left:20px;width:60px;height:2px;background:#1976d2;top:-1px;border-radius:2px;"></div>
+      </div>
+    </div>
+
+    <!-- Message List -->
+    <div style="position:absolute;top:155px;left:0;width:414px;bottom:83px;overflow-y:auto;">
+
+      <!-- Row 1: Raynil Kumar -->
+      <div style="display:flex;gap:10px;align-items:center;padding:14px 20px;border-bottom:1px solid #f5f5f5;">
+        <div class="avatar" style="background:linear-gradient(135deg,#5c6bc0,#3949ab);">RK</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+            <span class="msg-name bold">Raynil Kumar</span>
+            <span class="msg-time">12:02 PM</span>
+          </div>
+          <div class="msg-preview">Thank you so much for your quick needs</div>
+          <div class="msg-sub" style="margin-top:2px;">San Francisco &bull; Anderson</div>
+        </div>
+      </div>
+
+      <!-- Row 2: Balaji BK -->
+      <div style="display:flex;gap:10px;align-items:center;padding:14px 20px;border-bottom:1px solid #f5f5f5;">
+        <div class="avatar" style="background:linear-gradient(135deg,#ffa726,#fb8c00);">BK</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+            <span class="msg-name bold">Balaji BK</span>
+            <span class="msg-time">11:25 PM</span>
+          </div>
+          <div class="msg-preview">I am in need of your shop locations</div>
+          <div class="msg-sub" style="margin-top:2px;">New York &bull; Peterson</div>
+        </div>
+      </div>
+
+      <!-- Row 3: Anisha (badge green 9) -->
+      <div style="display:flex;gap:10px;align-items:center;padding:14px 20px;border-bottom:1px solid #f5f5f5;">
+        <div class="avatar" style="background:linear-gradient(135deg,#7e57c2,#5c35b5);">A</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+            <div class="msg-name-row">
+              <span class="msg-name">Anisha</span>
+              <span class="badge" style="background:#34c759;">9</span>
+            </div>
+            <span class="msg-time">Thu</span>
+          </div>
+          <div class="msg-preview">Amazing experiences, Thank you so muc...</div>
+          <div class="msg-sub" style="margin-top:2px;">Palo Alto</div>
+        </div>
+      </div>
+
+      <!-- Row 4: Christiania (badge red 5, reply) -->
+      <div style="display:flex;gap:10px;align-items:center;padding:14px 20px;border-bottom:1px solid #f5f5f5;">
+        <div class="avatar" style="background:linear-gradient(135deg,#455a64,#263238);">C</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+            <div class="msg-name-row">
+              <span class="msg-name">Christiania</span>
+              <span class="badge" style="background:#ff3b30;">5</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span class="reply-icon">&#8629;</span>
+              <span class="msg-time">Jan 23</span>
+            </div>
+          </div>
+          <div class="msg-preview">How are you, Can you share me the docs</div>
+          <div class="msg-sub" style="margin-top:2px;">Palo Alto</div>
+        </div>
+      </div>
+
+      <!-- Row 5: Lucifer (emoji, reply) -->
+      <div style="display:flex;gap:10px;align-items:center;padding:14px 20px;border-bottom:1px solid #f5f5f5;">
+        <div class="avatar" style="background:linear-gradient(135deg,#26c6da,#00acc1);">L</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+            <div class="msg-name-row">
+              <span class="msg-name">Lucifer</span>
+              <span style="color:#999;font-size:16px;margin-left:4px;">&#128142;</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span class="reply-icon">&#8629;</span>
+              <span class="msg-time">Jan 21</span>
+            </div>
+          </div>
+          <div class="msg-preview">Can you share the available timings for bo...</div>
+          <div class="msg-sub" style="margin-top:2px;">Denver</div>
+        </div>
+      </div>
+
+      <!-- Row 6: Amanda Wilson -->
+      <div style="display:flex;gap:10px;align-items:center;padding:14px 20px;border-bottom:1px solid #f5f5f5;">
+        <div class="avatar" style="background:linear-gradient(135deg,#ef5350,#c62828);">AW</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+            <span class="msg-name">Amanda Wilson</span>
+            <span class="msg-time">Jan 20</span>
+          </div>
+          <div class="msg-preview">Stuart: Had a really good stay, it is so clos...</div>
+          <div class="msg-sub" style="margin-top:2px;">San Francisco &bull; George</div>
+        </div>
+      </div>
+
+      <!-- Row 7: Clarence (badge orange 7) -->
+      <div style="display:flex;gap:10px;align-items:center;padding:14px 20px;border-bottom:1px solid #f5f5f5;">
+        <div class="avatar" style="background:linear-gradient(135deg,#5c6bc0,#3949ab);">C</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+            <div class="msg-name-row">
+              <span class="msg-name">Clarence</span>
+              <span class="badge" style="background:#f57c00;">7</span>
+            </div>
+            <span class="msg-time">Dec 26, 2022</span>
+          </div>
+          <div class="msg-preview">Marc Anton: How are you, Can you share...</div>
+          <div class="msg-sub" style="margin-top:2px;">Seattle</div>
+        </div>
+      </div>
+
+      <!-- Row 8: Christiania (badge red 5) -->
+      <div style="display:flex;gap:10px;align-items:center;padding:14px 20px;border-bottom:1px solid #f5f5f5;">
+        <div class="avatar" style="background:linear-gradient(135deg,#ffa726,#fb8c00);">C</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+            <div class="msg-name-row">
+              <span class="msg-name">Christiania</span>
+              <span class="badge" style="background:#ff3b30;">5</span>
+            </div>
+            <span class="msg-time">Dec 22, 2022</span>
+          </div>
+          <div class="msg-preview">How are you, Can you share me the docs</div>
+          <div class="msg-sub" style="margin-top:2px;">Palo Alto</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FAB (Compose) -->
+    <div class="fab">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#1976d2"/>
+      </svg>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <div class="tab-bar">
+      <div style="display:flex;align-items:center;height:49px;">
+
+        <!-- Inbox (active) -->
+        <div class="tab-item">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M20 4H4C2.9 4 2 4.9 2 6v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#1976d2"/>
+          </svg>
+          <span class="tab-label" style="color:#1976d2;font-weight:700;">Inbox</span>
+        </div>
+
+        <!-- Reviews -->
+        <div class="tab-item">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#212121" stroke-width="1.6" fill="none" stroke-linejoin="round"/>
+          </svg>
+          <span class="tab-label" style="color:#212121;">Reviews</span>
+        </div>
+
+        <!-- Quick send -->
+        <div class="tab-item">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#212121" opacity="0.7"/>
+          </svg>
+          <span class="tab-label" style="color:#212121;">Quick send</span>
+        </div>
+
+        <!-- Team chat -->
+        <div class="tab-item">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="#212121" opacity="0.7"/>
+          </svg>
+          <span class="tab-label" style="color:#212121;">Team chat</span>
+        </div>
+
+        <!-- More -->
+        <div class="tab-item" onclick="openReports()" style="cursor:pointer;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="5" width="18" height="2" rx="1" fill="#212121" opacity="0.7"/>
+            <rect x="3" y="11" width="18" height="2" rx="1" fill="#212121" opacity="0.7"/>
+            <rect x="3" y="17" width="18" height="2" rx="1" fill="#212121" opacity="0.7"/>
+          </svg>
+          <span class="tab-label" style="color:#212121;">More</span>
+        </div>
+
+      </div>
+      <!-- Home indicator -->
+      <div class="home-indicator"></div>
+    </div>
+
+    <!-- Dark overlay (shared) -->
+    <div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+    <!-- Messages Bottom Sheet -->
+    <div class="bottom-sheet" id="bottomSheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-list" id="sheetList">
+        <div class="sheet-item" onclick="selectFilter(this, 'All')">
+          <span>All</span>
+          <span class="sheet-item-count">10</span>
+        </div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Assigned to me')">
+          <span>Assigned to me</span>
+          <span class="sheet-item-count">1.3K</span>
+        </div>
+        <div class="sheet-item active" onclick="selectFilter(this, 'Messages')">
+          <span>Messages</span>
+          <span class="sheet-item-count" style="color:#8a898e;font-weight:400;">80</span>
+        </div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Leads')">
+          <span>Leads</span>
+          <span class="sheet-item-count">30</span>
+        </div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Reviews')"><span>Reviews</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Filter Smart Inbox')"><span>Filter Smart Inbox</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Birdeye Smart Inbox')"><span>Birdeye Smart Inbox</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Sample Leads')"><span>Sample Leads</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Reviews headsup')"><span>Reviews headsup</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Modern Leads')"><span>Modern Leads</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Survey lists')"><span>Survey lists</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Message blues')"><span>Message blues</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Smart Filter 1')"><span>Smart Filter 1</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Smart 2')"><span>Smart 2</span></div>
+      </div>
+      <div class="sheet-footer">
+        <div class="sheet-new-btn">
+          <span>New smart inbox</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 4v12M4 10h12" stroke="#212121" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:center;padding:10px 0 8px;">
+          <div style="width:134px;height:5px;background:#212121;border-radius:100px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Drawer -->
+    <div class="filter-drawer" id="filterDrawer">
+
+      <!-- Status Bar -->
+      <div style="position:absolute;top:0;left:0;width:414px;height:44px;background:white;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:10;">
+        <span style="font-size:17px;font-weight:600;color:#212121;letter-spacing:-0.41px;">9:41</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+            <rect x="0" y="8" width="3" height="4" rx="1" fill="#212121"/>
+            <rect x="4" y="5.5" width="3" height="6.5" rx="1" fill="#212121"/>
+            <rect x="8" y="3" width="3" height="9" rx="1" fill="#212121"/>
+            <rect x="12" y="0.5" width="3" height="11.5" rx="1" fill="#212121"/>
+          </svg>
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+            <path d="M8.5 9.5C9.05 9.5 9.5 9.95 9.5 10.5C9.5 11.05 9.05 11.5 8.5 11.5C7.95 11.5 7.5 11.05 7.5 10.5C7.5 9.95 7.95 9.5 8.5 9.5Z" fill="#212121"/>
+            <path d="M8.5 6.5C9.9 6.5 11.15 7.1 12.02 8.05L13.44 6.63C12.19 5.3 10.44 4.5 8.5 4.5C6.56 4.5 4.81 5.3 3.56 6.63L4.98 8.05C5.85 7.1 7.1 6.5 8.5 6.5Z" fill="#212121"/>
+            <path d="M8.5 3.5C10.82 3.5 12.91 4.49 14.38 6.1L15.8 4.68C13.95 2.7 11.36 1.5 8.5 1.5C5.64 1.5 3.05 2.7 1.2 4.68L2.62 6.1C4.09 4.49 6.18 3.5 8.5 3.5Z" fill="#212121"/>
+          </svg>
+          <svg width="28" height="13" viewBox="0 0 28 13" fill="none">
+            <rect x="0.5" y="0.5" width="23" height="12" rx="3.5" stroke="#212121" stroke-opacity="0.35"/>
+            <rect x="2" y="2" width="20" height="9" rx="2" fill="#212121"/>
+            <path d="M25 4.5V8.5C25.83 8.22 26.5 7.44 26.5 6.5C26.5 5.56 25.83 4.78 25 4.5Z" fill="#212121" fill-opacity="0.4"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Filters Header -->
+      <div style="position:absolute;top:54px;left:0;width:414px;height:61px;display:flex;align-items:center;padding:0 20px;gap:10px;">
+        <div onclick="closeFilter()" style="cursor:pointer;display:flex;align-items:center;padding:4px 4px 4px 0;">
+          <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
+            <path d="M11 1L2 10L11 19" stroke="#212121" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span style="font-size:26px;font-weight:700;color:#212121;">Filters</span>
+      </div>
+
+      <!-- Separator -->
+      <div style="position:absolute;top:115px;left:0;width:414px;height:0.5px;background:#dbdbdb;"></div>
+
+      <!-- Filter Rows -->
+      <div style="position:absolute;top:116px;left:0;width:414px;">
+
+        <div class="filter-row">
+          <span class="filter-label">Groups</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-groups">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">Location</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-location">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">City</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-city">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">State</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-state">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">Social manager</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-social-manager">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">Region manager</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-region-manager">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">Content manager</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-content-manager">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">Conversation status</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-conversation-status">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Advanced Filters Card (Birdeye Smart Inbox only) -->
+        <div id="advancedFilterCard" style="display:none;margin:10px 20px 0 20px;background:#f2f4f7;border-radius:4px;padding:16px;box-sizing:border-box;">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="font-size:14px;font-weight:400;color:#8f8f8f;letter-spacing:-0.28px;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Advanced filters</div>
+            <div style="font-size:14px;font-weight:400;color:#8f8f8f;letter-spacing:-0.28px;line-height:18px;">Where</div>
+            <div style="font-size:16px;font-weight:400;color:#212121;letter-spacing:-0.32px;line-height:20px;">Department is customer service</div>
+            <div style="font-size:14px;font-weight:400;color:#8f8f8f;letter-spacing:-0.28px;line-height:18px;">and</div>
+            <div style="font-size:16px;font-weight:400;color:#212121;letter-spacing:-0.32px;line-height:20px;">Service is Invisalign</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Home Indicator -->
+      <div style="position:absolute;bottom:0;left:0;width:414px;display:flex;justify-content:center;padding-bottom:8px;padding-top:10px;">
+        <div style="width:134px;height:5px;background:#212121;border-radius:100px;"></div>
+      </div>
+
+    </div>
+
+    <!-- Reports Screen -->
+    <div class="reports-screen" id="reportsScreen">
+
+      <!-- Status Bar -->
+      <div style="position:absolute;top:0;left:0;width:414px;height:44px;background:white;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:10;">
+        <span style="font-size:17px;font-weight:600;color:#212121;letter-spacing:-0.41px;">9:41</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+            <rect x="0" y="8" width="3" height="4" rx="1" fill="#212121"/>
+            <rect x="4" y="5.5" width="3" height="6.5" rx="1" fill="#212121"/>
+            <rect x="8" y="3" width="3" height="9" rx="1" fill="#212121"/>
+            <rect x="12" y="0.5" width="3" height="11.5" rx="1" fill="#212121"/>
+          </svg>
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+            <path d="M8.5 9.5C9.05 9.5 9.5 9.95 9.5 10.5C9.5 11.05 9.05 11.5 8.5 11.5C7.95 11.5 7.5 11.05 7.5 10.5C7.5 9.95 7.95 9.5 8.5 9.5Z" fill="#212121"/>
+            <path d="M8.5 6.5C9.9 6.5 11.15 7.1 12.02 8.05L13.44 6.63C12.19 5.3 10.44 4.5 8.5 4.5C6.56 4.5 4.81 5.3 3.56 6.63L4.98 8.05C5.85 7.1 7.1 6.5 8.5 6.5Z" fill="#212121"/>
+            <path d="M8.5 3.5C10.82 3.5 12.91 4.49 14.38 6.1L15.8 4.68C13.95 2.7 11.36 1.5 8.5 1.5C5.64 1.5 3.05 2.7 1.2 4.68L2.62 6.1C4.09 4.49 6.18 3.5 8.5 3.5Z" fill="#212121"/>
+          </svg>
+          <svg width="28" height="13" viewBox="0 0 28 13" fill="none">
+            <rect x="0.5" y="0.5" width="23" height="12" rx="3.5" stroke="#212121" stroke-opacity="0.35"/>
+            <rect x="2" y="2" width="20" height="9" rx="2" fill="#212121"/>
+            <path d="M25 4.5V8.5C25.83 8.22 26.5 7.44 26.5 6.5C26.5 5.56 25.83 4.78 25 4.5Z" fill="#212121" fill-opacity="0.4"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Header: Reports title + sliders filter icon -->
+      <div style="position:absolute;top:44px;left:0;width:414px;height:73px;background:white;display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
+        <span style="font-size:28px;font-weight:700;color:#212121;letter-spacing:-0.5px;">Reports</span>
+        <!-- Filter icon (consistent with landing page) -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M4 6h16" stroke="#212121" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M4 12h16" stroke="#212121" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M4 18h16" stroke="#212121" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="8" cy="6" r="2.5" fill="white" stroke="#212121" stroke-width="1.6"/>
+          <circle cx="16" cy="12" r="2.5" fill="white" stroke="#212121" stroke-width="1.6"/>
+          <circle cx="10" cy="18" r="2.5" fill="white" stroke="#212121" stroke-width="1.6"/>
+        </svg>
+      </div>
+
+      <!-- Separator below header -->
+      <div style="position:absolute;top:117px;left:0;width:414px;height:0.5px;background:#dbdbdb;"></div>
+
+      <!-- "Ratings over time ›" link -->
+      <div style="position:absolute;top:147px;left:20px;display:flex;align-items:center;gap:5px;cursor:pointer;" onclick="openSwitchReports()">
+        <span style="font-size:16px;font-weight:590;color:#1976d2;letter-spacing:-0.32px;">Ratings over time</span>
+        <span style="font-size:13px;font-weight:590;color:#1976d2;">&#8250;</span>
+      </div>
+
+      <!-- Chart Body (top:201px, height fits up to grey section at 625px) -->
+      <!-- Baseline (0-line) is at y=342 within chart body -->
+      <!-- Each unit = 64px; bars grow upward from y=342 -->
+      <div style="position:absolute;top:201px;left:0;width:414px;height:424px;overflow:visible;">
+
+        <!-- Y-axis labels -->
+        <span style="position:absolute;top:14px;left:20px;font-size:12px;color:#8a898e;">5.0</span>
+        <span style="position:absolute;top:78px;left:20px;font-size:12px;color:#8a898e;">4.0</span>
+        <span style="position:absolute;top:142px;left:20px;font-size:12px;color:#8a898e;">3.0</span>
+        <span style="position:absolute;top:206px;left:20px;font-size:12px;color:#8a898e;">2.0</span>
+        <span style="position:absolute;top:270px;left:20px;font-size:12px;color:#8a898e;">1.0</span>
+        <span style="position:absolute;top:334px;left:20px;font-size:12px;color:#8a898e;">0</span>
+
+        <!-- Horizontal grid lines (y = 21, 85, 149, 213, 277, 341 in chart body) -->
+        <div style="position:absolute;top:21px;left:48px;width:346px;height:0.5px;background:#e5e5e5;"></div>
+        <div style="position:absolute;top:85px;left:48px;width:346px;height:0.5px;background:#e5e5e5;"></div>
+        <div style="position:absolute;top:149px;left:48px;width:346px;height:0.5px;background:#e5e5e5;"></div>
+        <div style="position:absolute;top:213px;left:48px;width:346px;height:0.5px;background:#e5e5e5;"></div>
+        <div style="position:absolute;top:277px;left:48px;width:346px;height:0.5px;background:#e5e5e5;"></div>
+        <div style="position:absolute;top:341px;left:48px;width:346px;height:0.5px;background:#e5e5e5;"></div>
+
+        <!-- Dec 2022 — value 4.0, bar height 257px (4×64+1) -->
+        <!-- bar top = 342-257=85, value label top = 85-21=64 -->
+        <span style="position:absolute;top:64px;left:68px;width:30px;font-size:12px;font-weight:600;color:#212121;text-align:center;line-height:16px;">4.0</span>
+        <div style="position:absolute;top:85px;left:68px;width:30px;height:257px;background:#3cb9d1;border-radius:4px 4px 0 0;"></div>
+        <div style="position:absolute;top:354px;left:68px;width:30px;font-size:12px;color:#8a898e;text-align:center;line-height:16px;"><div>Dec</div><div>2022</div></div>
+
+        <!-- Jan 2023 — value 5.0, bar height 321px (5×64+1) -->
+        <!-- bar top = 342-321=21, value label top = 21-21=0 -->
+        <span style="position:absolute;top:2px;left:133px;width:30px;font-size:12px;font-weight:600;color:#212121;text-align:center;line-height:16px;">5.0</span>
+        <div style="position:absolute;top:21px;left:133px;width:30px;height:321px;background:#3cb9d1;border-radius:4px 4px 0 0;"></div>
+        <div style="position:absolute;top:354px;left:133px;width:30px;font-size:12px;color:#8a898e;text-align:center;line-height:16px;"><div>Jan</div><div>2023</div></div>
+
+        <!-- Feb 2023 — value 2.5, bar height 164px (2.5×64+4) -->
+        <!-- bar top = 342-164=178, value label top = 178-21=157 -->
+        <span style="position:absolute;top:157px;left:198px;width:30px;font-size:12px;font-weight:600;color:#212121;text-align:center;line-height:16px;">2.5</span>
+        <div style="position:absolute;top:178px;left:198px;width:30px;height:164px;background:#3cb9d1;border-radius:4px 4px 0 0;"></div>
+        <div style="position:absolute;top:354px;left:198px;width:30px;font-size:12px;color:#8a898e;text-align:center;line-height:16px;"><div>Feb</div><div>2023</div></div>
+
+        <!-- Mar 2023 — value 1.0, bar height 65px (1×64+1) -->
+        <!-- bar top = 342-65=277, value label top = 277-21=256 -->
+        <span style="position:absolute;top:256px;left:263px;width:30px;font-size:12px;font-weight:600;color:#212121;text-align:center;line-height:16px;">1.0</span>
+        <div style="position:absolute;top:277px;left:263px;width:30px;height:65px;background:#3cb9d1;border-radius:4px 4px 0 0;"></div>
+        <div style="position:absolute;top:354px;left:263px;width:30px;font-size:12px;color:#8a898e;text-align:center;line-height:16px;"><div>Mar</div><div>2023</div></div>
+
+        <!-- Apr 2023 — value 4.0, bar height 257px -->
+        <!-- bar top = 85, value label top = 64 -->
+        <span style="position:absolute;top:64px;left:328px;width:30px;font-size:12px;font-weight:600;color:#212121;text-align:center;line-height:16px;">4.0</span>
+        <div style="position:absolute;top:85px;left:328px;width:30px;height:257px;background:#3cb9d1;border-radius:4px 4px 0 0;"></div>
+        <div style="position:absolute;top:354px;left:328px;width:30px;font-size:12px;color:#8a898e;text-align:center;line-height:16px;"><div>Apr</div><div>2023</div></div>
+
+        <!-- May 2023 — value 2.0, bar height 129px (2×64+1) -->
+        <!-- bar top = 342-129=213, value label top = 213-21=192 -->
+        <!-- partially clipped at right edge (matches Figma design) -->
+        <span style="position:absolute;top:192px;left:393px;width:30px;font-size:12px;font-weight:600;color:#212121;text-align:center;line-height:16px;overflow:hidden;">2.0</span>
+        <div style="position:absolute;top:213px;left:393px;width:30px;height:129px;background:#3cb9d1;border-radius:4px 4px 0 0;"></div>
+        <div style="position:absolute;top:354px;left:393px;width:30px;font-size:12px;color:#8a898e;text-align:center;line-height:16px;overflow:hidden;"><div>May</div><div>2023</div></div>
+      </div>
+
+      <!-- Grey background section (below chart) -->
+      <div style="position:absolute;top:625px;left:0;width:414px;height:271px;background:#f6f6f6;"></div>
+
+      <!-- Separator at chart/grey boundary -->
+      <div style="position:absolute;top:625px;left:0;width:414px;height:0.5px;background:#dbdbdb;"></div>
+
+      <!-- Rating Summary Card -->
+      <div style="position:absolute;top:655px;left:20px;width:374px;height:247px;background:white;border-radius:5px;overflow:hidden;">
+
+        <!-- Card label -->
+        <p style="margin:0;padding:20px 20px 0;font-size:16px;font-weight:400;color:#8a898e;line-height:22px;">Rating summary</p>
+
+        <!-- Rows container -->
+        <div style="padding:16px 20px 0;display:flex;flex-direction:column;gap:20px;">
+
+          <!-- Row 1: Dec 2022 - Jan 2023 | 4.0 | ↑ 4.43% -->
+          <div style="display:flex;align-items:center;">
+            <span style="flex:1;font-size:14px;color:#212121;">Dec 2022 - Jan 2023</span>
+            <span style="font-size:14px;color:#212121;margin-right:52px;">4.0</span>
+            <div style="display:flex;align-items:center;gap:2px;">
+              <svg width="12" height="14" viewBox="0 0 12 14" fill="none"><path d="M6 1L11 7.5H8V13H4V7.5H1L6 1Z" fill="#34C759"/></svg>
+              <span style="font-size:14px;font-weight:510;color:#34c759;">4.43%</span>
+            </div>
+          </div>
+
+          <!-- Row 2: Jan 2023 - Feb 2023 | 3.5 | ↑ 2.43% -->
+          <div style="display:flex;align-items:center;">
+            <span style="flex:1;font-size:14px;color:#212121;">Jan 2023 - Feb 2023</span>
+            <span style="font-size:14px;color:#212121;margin-right:52px;">3.5</span>
+            <div style="display:flex;align-items:center;gap:2px;">
+              <svg width="12" height="14" viewBox="0 0 12 14" fill="none"><path d="M6 1L11 7.5H8V13H4V7.5H1L6 1Z" fill="#34C759"/></svg>
+              <span style="font-size:14px;font-weight:510;color:#34c759;">2.43%</span>
+            </div>
+          </div>
+
+          <!-- Row 3: Feb 2023 - Mar 2023 | 0.1 | ↓ 1.43% (red) -->
+          <div style="display:flex;align-items:center;">
+            <span style="flex:1;font-size:14px;color:#212121;">Feb 2023 - Mar 2023</span>
+            <span style="font-size:14px;color:#212121;margin-right:52px;">0.1</span>
+            <div style="display:flex;align-items:center;gap:2px;">
+              <svg width="12" height="14" viewBox="0 0 12 14" fill="none"><path d="M6 13L1 6.5H4V1H8V6.5H11L6 13Z" fill="#FF3B30"/></svg>
+              <span style="font-size:14px;font-weight:510;color:#ff3b30;">1.43%</span>
+            </div>
+          </div>
+
+          <!-- Row 4: Mar 2023 - Apr 2023 | 5.0 | ↑ 4.98% -->
+          <div style="display:flex;align-items:center;">
+            <span style="flex:1;font-size:14px;color:#212121;">Mar 2023 - Apr 2023</span>
+            <span style="font-size:14px;color:#212121;margin-right:52px;">5.0</span>
+            <div style="display:flex;align-items:center;gap:2px;">
+              <svg width="12" height="14" viewBox="0 0 12 14" fill="none"><path d="M6 1L11 7.5H8V13H4V7.5H1L6 1Z" fill="#34C759"/></svg>
+              <span style="font-size:14px;font-weight:510;color:#34c759;">4.98%</span>
+            </div>
+          </div>
+
+          <!-- Row 5: Apr 2023 - May 2023 | 1.0 | ↑ 1.98% -->
+          <div style="display:flex;align-items:center;">
+            <span style="flex:1;font-size:14px;color:#212121;">Apr 2023 - May 2023</span>
+            <span style="font-size:14px;color:#212121;margin-right:52px;">1.0</span>
+            <div style="display:flex;align-items:center;gap:2px;">
+              <svg width="12" height="14" viewBox="0 0 12 14" fill="none"><path d="M6 1L11 7.5H8V13H4V7.5H1L6 1Z" fill="#34C759"/></svg>
+              <span style="font-size:14px;font-weight:510;color:#34c759;">1.98%</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tab bar separator -->
+      <div style="position:absolute;top:812px;left:0;width:414px;height:0.5px;background:#dbdbdb;"></div>
+
+      <!-- Tab Bar -->
+      <div style="position:absolute;bottom:0;left:0;width:414px;background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);">
+        <div style="display:flex;align-items:center;height:49px;">
+
+          <!-- Inbox -->
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;" onclick="closeReports()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M20 4H4C2.9 4 2 4.9 2 6v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#212121" opacity="0.7"/>
+            </svg>
+            <span style="font-size:10px;color:#212121;font-family:inherit;">Inbox</span>
+          </div>
+
+          <!-- Reviews -->
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#212121" stroke-width="1.6" fill="none" stroke-linejoin="round"/>
+            </svg>
+            <span style="font-size:10px;color:#212121;font-family:inherit;">Reviews</span>
+          </div>
+
+          <!-- Quick send -->
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#212121" opacity="0.7"/>
+            </svg>
+            <span style="font-size:10px;color:#212121;font-family:inherit;">Quick send</span>
+          </div>
+
+          <!-- Team chat -->
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="#212121" opacity="0.7"/>
+            </svg>
+            <span style="font-size:10px;color:#212121;font-family:inherit;">Team chat</span>
+          </div>
+
+          <!-- More (active / blue) -->
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="5" width="18" height="2" rx="1" fill="#1976d2"/>
+              <rect x="3" y="11" width="18" height="2" rx="1" fill="#1976d2"/>
+              <rect x="3" y="17" width="18" height="2" rx="1" fill="#1976d2"/>
+            </svg>
+            <span style="font-size:10px;color:#1976d2;font-weight:700;font-family:inherit;">More</span>
+          </div>
+
+        </div>
+        <!-- Home indicator -->
+        <div style="display:flex;justify-content:center;padding:8px 0 8px;">
+          <div style="width:134px;height:5px;background:#212121;border-radius:100px;"></div>
+        </div>
+      </div>
+
+    </div>
+    <!-- END Reports Screen -->
+
+    <!-- Switch Reports full-screen -->
+    <div class="switch-reports-drawer" id="switchReportsDrawer">
+
+      <!-- Status Bar -->
+      <div style="height:44px;background:#f5f5f5;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;">
+        <span style="font-size:17px;font-weight:600;color:#212121;letter-spacing:-0.41px;">9:41</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+            <rect x="0" y="8" width="3" height="4" rx="1" fill="#212121"/>
+            <rect x="4" y="5.5" width="3" height="6.5" rx="1" fill="#212121"/>
+            <rect x="8" y="3" width="3" height="9" rx="1" fill="#212121"/>
+            <rect x="12" y="0.5" width="3" height="11.5" rx="1" fill="#212121"/>
+          </svg>
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+            <path d="M8.5 9.5C9.05 9.5 9.5 9.95 9.5 10.5C9.5 11.05 9.05 11.5 8.5 11.5C7.95 11.5 7.5 11.05 7.5 10.5C7.5 9.95 7.95 9.5 8.5 9.5Z" fill="#212121"/>
+            <path d="M8.5 6.5C9.9 6.5 11.15 7.1 12.02 8.05L13.44 6.63C12.19 5.3 10.44 4.5 8.5 4.5C6.56 4.5 4.81 5.3 3.56 6.63L4.98 8.05C5.85 7.1 7.1 6.5 8.5 6.5Z" fill="#212121"/>
+            <path d="M8.5 3.5C10.82 3.5 12.91 4.49 14.38 6.1L15.8 4.68C13.95 2.7 11.36 1.5 8.5 1.5C5.64 1.5 3.05 2.7 1.2 4.68L2.62 6.1C4.09 4.49 6.18 3.5 8.5 3.5Z" fill="#212121"/>
+          </svg>
+          <svg width="28" height="13" viewBox="0 0 28 13" fill="none">
+            <rect x="0.5" y="0.5" width="23" height="12" rx="3.5" stroke="#212121" stroke-opacity="0.35"/>
+            <rect x="2" y="2" width="20" height="9" rx="2" fill="#212121"/>
+            <path d="M25 4.5V8.5C25.83 8.22 26.5 7.44 26.5 6.5C26.5 5.56 25.83 4.78 25 4.5Z" fill="#212121" fill-opacity="0.4"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Header: back arrow + title -->
+      <div style="height:60px;background:#f5f5f5;display:flex;align-items:center;padding:0 20px;gap:12px;border-bottom:0.5px solid #dbdbdb;">
+        <div onclick="closeSwitchReports()" style="cursor:pointer;display:flex;align-items:center;justify-content:center;padding:4px 8px 4px 0;">
+          <svg width="11" height="19" viewBox="0 0 11 19" fill="none">
+            <path d="M10 1L2 9.5L10 18" stroke="#212121" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span style="font-size:22px;font-weight:700;color:#212121;letter-spacing:-0.4px;">Switch Reports</span>
+      </div>
+
+      <!-- Content list -->
+      <div style="padding-bottom:60px;">
+
+        <!-- REVIEWS & RATINGS -->
+        <div class="sr-section-header">Reviews &amp; Ratings</div>
+        <div class="sr-item active" onclick="selectReport(this, 'Ratings over time')">Ratings Over Time</div>
+        <div class="sr-item" onclick="selectReport(this, 'Reviews over time')">Reviews Over Time</div>
+        <div class="sr-item" onclick="selectReport(this, 'Recent reviews')">Recent Reviews</div>
+        <div class="sr-item" onclick="selectReport(this, 'By source')">By Source</div>
+        <div class="sr-item" onclick="selectReport(this, 'By employee')">By Employee</div>
+        <div class="sr-item" onclick="selectReport(this, 'Average response time')">Average Response Time Over Time</div>
+        <div class="sr-item" onclick="selectReport(this, 'Reviewer response status')">Reviewer Response Status</div>
+        <div class="sr-item" onclick="selectReport(this, 'Reviewer type')">Reviewer Type</div>
+        <div class="sr-item" onclick="selectReport(this, 'By review verification status')">By Review Verification Status</div>
+
+        <!-- SENTIMENTS -->
+        <div class="sr-section-header">Sentiments</div>
+        <div class="sr-item" onclick="selectReport(this, 'Sentiments over time')">Sentiments Over Time</div>
+        <div class="sr-item" onclick="selectReport(this, 'Positive sentiment')">Positive Sentiment</div>
+
+        <!-- TRAFFIC -->
+        <div class="sr-section-header">Traffic</div>
+        <div class="sr-item" onclick="selectReport(this, 'Visitors')">Visitors</div>
+
+        <!-- CONVERSION REPORTS -->
+        <div class="sr-section-header">Conversion Reports</div>
+        <div class="sr-item" onclick="selectReport(this, 'Email & SMS')">Email &amp; SMS</div>
+
+      </div>
+    </div>
+    <!-- END Switch Reports full-screen -->
+
+  </div><!-- end .phone -->
+
+  <script>
+    function openSheet() {
+      document.getElementById('bottomSheet').classList.add('open');
+      document.getElementById('overlay').classList.add('visible');
+    }
+    function openFilter() {
+      document.getElementById('filterDrawer').classList.add('open');
+      var currentInbox = document.getElementById('headerTitle').textContent.trim();
+      document.getElementById('advancedFilterCard').style.display =
+        (currentInbox === 'Birdeye Smart Inbox') ? 'block' : 'none';
+
+      // Also sync filter values when drawer opens
+      var preset = filterPresets[currentInbox] || {};
+      allFilterIds.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.textContent = preset[id] || 'All';
+          el.style.color = '#8a898e';
+        }
+      });
+    }
+    function closeFilter() {
+      document.getElementById('filterDrawer').classList.remove('open');
+    }
+    function closeAll() {
+      document.getElementById('bottomSheet').classList.remove('open');
+      document.getElementById('overlay').classList.remove('visible');
+    }
+    function openReports() {
+      document.getElementById('reportsScreen').classList.add('open');
+    }
+    function closeReports() {
+      document.getElementById('reportsScreen').classList.remove('open');
+    }
+    function openSwitchReports() {
+      document.getElementById('switchReportsDrawer').classList.add('open');
+    }
+    function closeSwitchReports() {
+      document.getElementById('switchReportsDrawer').classList.remove('open');
+      // Make sure the Reports screen stays visible
+      var rs = document.getElementById('reportsScreen');
+      rs.classList.add('open');
+      rs.style.transform = 'translateX(0)';
+    }
+    function selectReport(el, name) {
+      document.querySelectorAll('.sr-item').forEach(function(item) {
+        item.classList.remove('active');
+      });
+      el.classList.add('active');
+      // Update the label in the Reports header
+      var link = document.querySelector('#reportsScreen [onclick="openSwitchReports()"] span:first-child');
+      if (link) link.textContent = el.textContent;
+      closeSwitchReports();
+    }
+    var filterPresets = {
+      'Birdeye Smart Inbox': {
+        'fv-groups': '2 groups',
+        'fv-location': 'All',
+        'fv-city': '1 city',
+        'fv-state': 'All time',
+        'fv-social-manager': 'All',
+        'fv-region-manager': 'All',
+        'fv-content-manager': 'Newest',
+        'fv-conversation-status': 'Unread'
+      }
+    };
+
+    var allFilterIds = ['fv-groups','fv-location','fv-city','fv-state','fv-social-manager','fv-region-manager','fv-content-manager','fv-conversation-status'];
+
+    function selectFilter(el, name) {
+      document.querySelectorAll('#sheetList .sheet-item').forEach(function(item) {
+        item.classList.remove('active');
+      });
+      el.classList.add('active');
+      document.getElementById('headerTitle').textContent = name;
+
+      var preset = filterPresets[name] || {};
+      allFilterIds.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) {
+          var val = preset[id] || 'All';
+          el.textContent = val;
+          el.style.color = '#8a898e';
+        }
+      });
+
+      // Show advanced filter card only for Birdeye Smart Inbox
+      document.getElementById('advancedFilterCard').style.display =
+        (name === 'Birdeye Smart Inbox') ? 'block' : 'none';
+
+      closeAll();
+    }
+  </script>
+</body>
+</html>
