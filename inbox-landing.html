@@ -216,6 +216,156 @@
       margin-bottom: 8px;
       margin-top: 10px;
     }
+
+    /* Dark overlay */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 40;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .overlay.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* Bottom sheet */
+    .bottom-sheet {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 414px;
+      background: white;
+      border-radius: 20px 20px 0 0;
+      z-index: 45;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      max-height: 808px;
+      display: flex;
+      flex-direction: column;
+    }
+    .bottom-sheet.open {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 40px;
+      height: 4px;
+      background: #dbdbdb;
+      border-radius: 100px;
+      margin: 12px auto 0;
+      flex-shrink: 0;
+    }
+
+    .sheet-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 20px 0;
+    }
+
+    .sheet-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      font-size: 16px;
+      color: #212121;
+      cursor: pointer;
+      line-height: 22px;
+    }
+    .sheet-item.active {
+      color: #1976d2;
+      font-weight: 700;
+    }
+    .sheet-item-count {
+      font-size: 16px;
+      color: #8a898e;
+      font-weight: 400;
+    }
+
+    .sheet-new-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      font-size: 16px;
+      color: #212121;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 -1px 0 #f0f0f0;
+    }
+
+    .sheet-footer {
+      flex-shrink: 0;
+    }
+
+    /* Filter drawer */
+    .filter-drawer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 414px;
+      height: 896px;
+      background: white;
+      z-index: 50;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .filter-drawer.open {
+      transform: translateX(0);
+    }
+
+    .filter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 20px;
+      cursor: pointer;
+    }
+
+    .filter-row:active {
+      background: #f9f9f9;
+    }
+
+    .filter-label {
+      font-size: 16px;
+      color: #212121;
+      font-weight: 400;
+    }
+
+    .filter-value-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-value {
+      font-size: 16px;
+      color: #8a898e;
+    }
+
+    .filter-chevron {
+      font-size: 14px;
+      color: #8a898e;
+    }
+
+    .filter-separator {
+      height: 0.5px;
+      background: #dbdbdb;
+      margin: 0 20px;
+    }
+
+    .filter-icon-btn {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   </style>
 </head>
 <body>
@@ -250,8 +400,8 @@
     <!-- Top Nav -->
     <div style="position:absolute;top:54px;left:0;width:414px;background:white;padding:0 20px;z-index:9;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0;">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:28px;font-weight:700;color:#212121;">Messages</span>
+        <div style="display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="openSheet()">
+          <span id="headerTitle" style="font-size:28px;font-weight:700;color:#212121;">Messages</span>
           <span style="font-size:16px;color:#212121;">&#8964;</span>
         </div>
         <div style="display:flex;gap:16px;align-items:center;">
@@ -261,9 +411,11 @@
             <path d="M16.5 16.5L21 21" stroke="#212121" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
           <!-- Filter icon -->
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M4 6h16M7 12h10M10 18h4" stroke="#212121" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
+          <div class="filter-icon-btn" onclick="openFilter()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M4 6h16M7 12h10M10 18h4" stroke="#212121" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </div>
         </div>
       </div>
     </div>
@@ -468,6 +620,270 @@
       <div class="home-indicator"></div>
     </div>
 
+    <!-- Dark overlay (shared) -->
+    <div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+    <!-- Messages Bottom Sheet -->
+    <div class="bottom-sheet" id="bottomSheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-list" id="sheetList">
+        <div class="sheet-item" onclick="selectFilter(this, 'All')">
+          <span>All</span>
+          <span class="sheet-item-count">10</span>
+        </div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Assigned to me')">
+          <span>Assigned to me</span>
+          <span class="sheet-item-count">1.3K</span>
+        </div>
+        <div class="sheet-item active" onclick="selectFilter(this, 'Messages')">
+          <span>Messages</span>
+          <span class="sheet-item-count" style="color:#8a898e;font-weight:400;">80</span>
+        </div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Leads')">
+          <span>Leads</span>
+          <span class="sheet-item-count">30</span>
+        </div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Reviews')"><span>Reviews</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Filter Smart Inbox')"><span>Filter Smart Inbox</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Birdeye Smart Inbox')"><span>Birdeye Smart Inbox</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Sample Leads')"><span>Sample Leads</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Reviews headsup')"><span>Reviews headsup</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Modern Leads')"><span>Modern Leads</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Survey lists')"><span>Survey lists</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Message blues')"><span>Message blues</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Smart Filter 1')"><span>Smart Filter 1</span></div>
+        <div class="sheet-item" onclick="selectFilter(this, 'Smart 2')"><span>Smart 2</span></div>
+      </div>
+      <div class="sheet-footer">
+        <div class="sheet-new-btn">
+          <span>New smart inbox</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 4v12M4 10h12" stroke="#212121" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:center;padding:10px 0 8px;">
+          <div style="width:134px;height:5px;background:#212121;border-radius:100px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Drawer -->
+    <div class="filter-drawer" id="filterDrawer">
+
+      <!-- Status Bar -->
+      <div style="position:absolute;top:0;left:0;width:414px;height:44px;background:white;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:10;">
+        <span style="font-size:17px;font-weight:600;color:#212121;letter-spacing:-0.41px;">9:41</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+            <rect x="0" y="8" width="3" height="4" rx="1" fill="#212121"/>
+            <rect x="4" y="5.5" width="3" height="6.5" rx="1" fill="#212121"/>
+            <rect x="8" y="3" width="3" height="9" rx="1" fill="#212121"/>
+            <rect x="12" y="0.5" width="3" height="11.5" rx="1" fill="#212121"/>
+          </svg>
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+            <path d="M8.5 9.5C9.05 9.5 9.5 9.95 9.5 10.5C9.5 11.05 9.05 11.5 8.5 11.5C7.95 11.5 7.5 11.05 7.5 10.5C7.5 9.95 7.95 9.5 8.5 9.5Z" fill="#212121"/>
+            <path d="M8.5 6.5C9.9 6.5 11.15 7.1 12.02 8.05L13.44 6.63C12.19 5.3 10.44 4.5 8.5 4.5C6.56 4.5 4.81 5.3 3.56 6.63L4.98 8.05C5.85 7.1 7.1 6.5 8.5 6.5Z" fill="#212121"/>
+            <path d="M8.5 3.5C10.82 3.5 12.91 4.49 14.38 6.1L15.8 4.68C13.95 2.7 11.36 1.5 8.5 1.5C5.64 1.5 3.05 2.7 1.2 4.68L2.62 6.1C4.09 4.49 6.18 3.5 8.5 3.5Z" fill="#212121"/>
+          </svg>
+          <svg width="28" height="13" viewBox="0 0 28 13" fill="none">
+            <rect x="0.5" y="0.5" width="23" height="12" rx="3.5" stroke="#212121" stroke-opacity="0.35"/>
+            <rect x="2" y="2" width="20" height="9" rx="2" fill="#212121"/>
+            <path d="M25 4.5V8.5C25.83 8.22 26.5 7.44 26.5 6.5C26.5 5.56 25.83 4.78 25 4.5Z" fill="#212121" fill-opacity="0.4"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Filters Header -->
+      <div style="position:absolute;top:54px;left:0;width:414px;height:61px;display:flex;align-items:center;padding:0 20px;gap:10px;">
+        <div onclick="closeFilter()" style="cursor:pointer;display:flex;align-items:center;padding:4px 4px 4px 0;">
+          <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
+            <path d="M11 1L2 10L11 19" stroke="#212121" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span style="font-size:26px;font-weight:700;color:#212121;">Filters</span>
+      </div>
+
+      <!-- Separator -->
+      <div style="position:absolute;top:115px;left:0;width:414px;height:0.5px;background:#dbdbdb;"></div>
+
+      <!-- Filter Rows -->
+      <div style="position:absolute;top:116px;left:0;width:414px;">
+
+        <div class="filter-row">
+          <span class="filter-label">Groups</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-groups">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">Location</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-location">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">City</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-city">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">State</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-state">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">Social manager</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-social-manager">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">Region manager</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-region-manager">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">Content manager</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-content-manager">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="filter-separator"></div>
+
+        <div class="filter-row">
+          <span class="filter-label">Conversation status</span>
+          <div class="filter-value-group">
+            <span class="filter-value" id="fv-conversation-status">All</span>
+            <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
+              <path d="M1 1l6 5.5L1 12" stroke="#8a898e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Advanced Filters Card (Birdeye Smart Inbox only) -->
+        <div id="advancedFilterCard" style="display:none;margin:10px 20px 0 20px;background:#f2f4f7;border-radius:4px;padding:16px;box-sizing:border-box;">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="font-size:14px;font-weight:400;color:#8f8f8f;letter-spacing:-0.28px;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Advanced filters</div>
+            <div style="font-size:14px;font-weight:400;color:#8f8f8f;letter-spacing:-0.28px;line-height:18px;">Where</div>
+            <div style="font-size:16px;font-weight:400;color:#212121;letter-spacing:-0.32px;line-height:20px;">Department is customer service</div>
+            <div style="font-size:14px;font-weight:400;color:#8f8f8f;letter-spacing:-0.28px;line-height:18px;">and</div>
+            <div style="font-size:16px;font-weight:400;color:#212121;letter-spacing:-0.32px;line-height:20px;">Service is Invisalign</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Home Indicator -->
+      <div style="position:absolute;bottom:0;left:0;width:414px;display:flex;justify-content:center;padding-bottom:8px;padding-top:10px;">
+        <div style="width:134px;height:5px;background:#212121;border-radius:100px;"></div>
+      </div>
+
+    </div>
+
   </div>
+
+  <script>
+    function openSheet() {
+      document.getElementById('bottomSheet').classList.add('open');
+      document.getElementById('overlay').classList.add('visible');
+    }
+    function openFilter() {
+      document.getElementById('filterDrawer').classList.add('open');
+      var currentInbox = document.getElementById('headerTitle').textContent.trim();
+      document.getElementById('advancedFilterCard').style.display =
+        (currentInbox === 'Birdeye Smart Inbox') ? 'block' : 'none';
+
+      // Also sync filter values when drawer opens
+      var preset = filterPresets[currentInbox] || {};
+      allFilterIds.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.textContent = preset[id] || 'All';
+          el.style.color = '#8a898e';
+        }
+      });
+    }
+    function closeFilter() {
+      document.getElementById('filterDrawer').classList.remove('open');
+    }
+    function closeAll() {
+      document.getElementById('bottomSheet').classList.remove('open');
+      document.getElementById('overlay').classList.remove('visible');
+    }
+    var filterPresets = {
+      'Birdeye Smart Inbox': {
+        'fv-groups': '2 groups',
+        'fv-location': 'All',
+        'fv-city': '1 city',
+        'fv-state': 'All time',
+        'fv-social-manager': 'All',
+        'fv-region-manager': 'All',
+        'fv-content-manager': 'Newest',
+        'fv-conversation-status': 'Unread'
+      }
+    };
+
+    var allFilterIds = ['fv-groups','fv-location','fv-city','fv-state','fv-social-manager','fv-region-manager','fv-content-manager','fv-conversation-status'];
+
+    function selectFilter(el, name) {
+      document.querySelectorAll('#sheetList .sheet-item').forEach(function(item) {
+        item.classList.remove('active');
+      });
+      el.classList.add('active');
+      document.getElementById('headerTitle').textContent = name;
+
+      var preset = filterPresets[name] || {};
+      allFilterIds.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) {
+          var val = preset[id] || 'All';
+          el.textContent = val;
+          el.style.color = '#8a898e';
+        }
+      });
+
+      // Show advanced filter card only for Birdeye Smart Inbox
+      document.getElementById('advancedFilterCard').style.display =
+        (name === 'Birdeye Smart Inbox') ? 'block' : 'none';
+
+      closeAll();
+    }
+  </script>
 </body>
 </html>

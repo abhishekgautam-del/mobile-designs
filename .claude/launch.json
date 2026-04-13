@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Static HTML Server",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["/tmp/serve_inbox.py"],
+      "port": 8080,
+      "autoPort": true
+    }
+  ]
+}
