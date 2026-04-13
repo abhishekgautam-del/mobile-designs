@@ -1217,6 +1217,10 @@
     }
     function closeSwitchReports() {
       document.getElementById('switchReportsDrawer').classList.remove('open');
+      // Make sure the Reports screen stays visible
+      var rs = document.getElementById('reportsScreen');
+      rs.classList.add('open');
+      rs.style.transform = 'translateX(0)';
     }
     function selectReport(el, name) {
       document.querySelectorAll('.sr-item').forEach(function(item) {
