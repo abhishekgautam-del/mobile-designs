@@ -367,6 +367,52 @@
       justify-content: center;
     }
 
+    /* Switch Reports drawer */
+    .switch-reports-drawer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 414px;
+      height: 896px;
+      background: #f5f5f5;
+      z-index: 70;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .switch-reports-drawer.open {
+      transform: translateX(0);
+    }
+
+    .sr-section-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: #8a898e;
+      letter-spacing: 0.5px;
+      padding: 20px 20px 8px;
+      text-transform: uppercase;
+    }
+    .sr-item {
+      background: white;
+      padding: 18px 20px;
+      font-size: 17px;
+      color: #212121;
+      font-weight: 400;
+      border-bottom: 0.5px solid #e5e5e5;
+      cursor: pointer;
+    }
+    .sr-item:first-child {
+      border-top: 0.5px solid #e5e5e5;
+    }
+    .sr-item.active {
+      color: #1976d2;
+      font-weight: 500;
+    }
+    .sr-item:active {
+      background: #f9f9f9;
+    }
+
     /* Reports screen */
     .reports-screen {
       position: absolute;
@@ -877,7 +923,7 @@
       <div style="position:absolute;top:117px;left:0;width:414px;height:0.5px;background:#dbdbdb;"></div>
 
       <!-- "Ratings over time ›" link -->
-      <div style="position:absolute;top:147px;left:20px;display:flex;align-items:center;gap:5px;cursor:pointer;">
+      <div style="position:absolute;top:147px;left:20px;display:flex;align-items:center;gap:5px;cursor:pointer;" onclick="openSwitchReports()">
         <span style="font-size:16px;font-weight:590;color:#1976d2;letter-spacing:-0.32px;">Ratings over time</span>
         <span style="font-size:13px;font-weight:590;color:#1976d2;">&#8250;</span>
       </div>
@@ -1068,6 +1114,70 @@
     </div>
     <!-- END Reports Screen -->
 
+    <!-- Switch Reports Drawer -->
+    <div class="switch-reports-drawer" id="switchReportsDrawer">
+
+      <!-- Status Bar -->
+      <div style="height:44px;background:#f5f5f5;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;">
+        <span style="font-size:17px;font-weight:600;color:#212121;letter-spacing:-0.41px;">9:41</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+            <rect x="0" y="8" width="3" height="4" rx="1" fill="#212121"/>
+            <rect x="4" y="5.5" width="3" height="6.5" rx="1" fill="#212121"/>
+            <rect x="8" y="3" width="3" height="9" rx="1" fill="#212121"/>
+            <rect x="12" y="0.5" width="3" height="11.5" rx="1" fill="#212121"/>
+          </svg>
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+            <path d="M8.5 9.5C9.05 9.5 9.5 9.95 9.5 10.5C9.5 11.05 9.05 11.5 8.5 11.5C7.95 11.5 7.5 11.05 7.5 10.5C7.5 9.95 7.95 9.5 8.5 9.5Z" fill="#212121"/>
+            <path d="M8.5 6.5C9.9 6.5 11.15 7.1 12.02 8.05L13.44 6.63C12.19 5.3 10.44 4.5 8.5 4.5C6.56 4.5 4.81 5.3 3.56 6.63L4.98 8.05C5.85 7.1 7.1 6.5 8.5 6.5Z" fill="#212121"/>
+            <path d="M8.5 3.5C10.82 3.5 12.91 4.49 14.38 6.1L15.8 4.68C13.95 2.7 11.36 1.5 8.5 1.5C5.64 1.5 3.05 2.7 1.2 4.68L2.62 6.1C4.09 4.49 6.18 3.5 8.5 3.5Z" fill="#212121"/>
+          </svg>
+          <svg width="28" height="13" viewBox="0 0 28 13" fill="none">
+            <rect x="0.5" y="0.5" width="23" height="12" rx="3.5" stroke="#212121" stroke-opacity="0.35"/>
+            <rect x="2" y="2" width="20" height="9" rx="2" fill="#212121"/>
+            <path d="M25 4.5V8.5C25.83 8.22 26.5 7.44 26.5 6.5C26.5 5.56 25.83 4.78 25 4.5Z" fill="#212121" fill-opacity="0.4"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Header: back arrow + title -->
+      <div style="height:56px;background:#f5f5f5;display:flex;align-items:center;padding:0 16px;gap:8px;border-bottom:0.5px solid #dbdbdb;">
+        <div onclick="closeSwitchReports()" style="cursor:pointer;display:flex;align-items:center;padding:4px 8px 4px 0;">
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
+            <path d="M9 1L1 9L9 17" stroke="#212121" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span style="font-size:22px;font-weight:700;color:#212121;letter-spacing:-0.4px;">Switch Reports</span>
+      </div>
+
+      <!-- Content list -->
+      <div style="padding-bottom:40px;">
+
+        <!-- REVIEWS & RATINGS -->
+        <div class="sr-section-header">Reviews &amp; Ratings</div>
+        <div class="sr-item active" onclick="selectReport(this, 'Ratings over time')">Ratings Over Time</div>
+        <div class="sr-item" onclick="selectReport(this, 'Reviews over time')">Reviews Over Time</div>
+        <div class="sr-item" onclick="selectReport(this, 'Recent reviews')">Recent Reviews</div>
+        <div class="sr-item" onclick="selectReport(this, 'By source')">By Source</div>
+        <div class="sr-item" onclick="selectReport(this, 'By employee')">By Employee</div>
+        <div class="sr-item" onclick="selectReport(this, 'Average response time')">Average Response Time Over Time</div>
+
+        <!-- SENTIMENTS -->
+        <div class="sr-section-header" style="margin-top:8px;">Sentiments</div>
+        <div class="sr-item" onclick="selectReport(this, 'Sentiments over time')">Sentiments Over Time</div>
+
+        <!-- TRAFFIC -->
+        <div class="sr-section-header" style="margin-top:8px;">Traffic</div>
+        <div class="sr-item" onclick="selectReport(this, 'Visitors')">Visitors</div>
+
+        <!-- CONVERSION REPORTS -->
+        <div class="sr-section-header" style="margin-top:8px;">Conversion Reports</div>
+        <div class="sr-item" onclick="selectReport(this, 'Email & SMS')">Email &amp; SMS</div>
+
+      </div>
+    </div>
+    <!-- END Switch Reports Drawer -->
+
   </div><!-- end .phone -->
 
   <script>
@@ -1103,6 +1213,23 @@
     }
     function closeReports() {
       document.getElementById('reportsScreen').classList.remove('open');
+    }
+    function openSwitchReports() {
+      document.getElementById('switchReportsDrawer').classList.add('open');
+    }
+    function closeSwitchReports() {
+      document.getElementById('switchReportsDrawer').classList.remove('open');
+    }
+    function selectReport(el, name) {
+      // Update active state in the list
+      document.querySelectorAll('.sr-item').forEach(function(item) {
+        item.classList.remove('active');
+      });
+      el.classList.add('active');
+      // Update the "Ratings over time" label in the Reports header
+      var label = document.querySelector('#reportsScreen .report-title-link span:first-child');
+      if (label) label.textContent = el.textContent;
+      closeSwitchReports();
     }
     var filterPresets = {
       'Birdeye Smart Inbox': {
