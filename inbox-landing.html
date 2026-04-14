@@ -780,7 +780,7 @@
       <div style="position:absolute;top:115px;left:0;width:414px;height:0.5px;background:#dbdbdb;"></div>
 
       <!-- Filter Rows -->
-      <div style="position:absolute;top:116px;left:0;width:414px;">
+      <div id="filterRows" style="position:absolute;top:116px;left:0;width:414px;">
 
         <div class="filter-row">
           <span class="filter-label">Groups</span>
@@ -869,17 +869,17 @@
           </div>
         </div>
 
-        <!-- Advanced Filters Card (Birdeye Smart Inbox only) -->
-        <div id="advancedFilterCard" style="display:none;margin:10px 20px 0 20px;background:#f2f4f7;border-radius:4px;padding:16px;box-sizing:border-box;">
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <div style="font-size:14px;font-weight:400;color:#8f8f8f;letter-spacing:-0.28px;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Advanced filters</div>
-            <div style="font-size:14px;font-weight:400;color:#8f8f8f;letter-spacing:-0.28px;line-height:18px;">Where</div>
-            <div style="font-size:16px;font-weight:400;color:#212121;letter-spacing:-0.32px;line-height:20px;">Department is customer service</div>
-            <div style="font-size:14px;font-weight:400;color:#8f8f8f;letter-spacing:-0.28px;line-height:18px;">and</div>
-            <div style="font-size:16px;font-weight:400;color:#212121;letter-spacing:-0.32px;line-height:20px;">Service is Invisalign</div>
-          </div>
-        </div>
+      </div>
 
+      <!-- Advanced Filters Card (Birdeye Smart Inbox only) -->
+      <div id="advancedFilterCard" style="display:none;position:absolute;top:126px;left:20px;width:374px;background:#f2f4f7;border-radius:4px;padding:16px;box-sizing:border-box;">
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:14px;font-weight:400;color:#8f8f8f;letter-spacing:-0.28px;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Advanced filters</div>
+          <div style="font-size:14px;font-weight:400;color:#8f8f8f;letter-spacing:-0.28px;line-height:18px;">Where</div>
+          <div style="font-size:16px;font-weight:400;color:#212121;letter-spacing:-0.32px;line-height:20px;">Department is customer service</div>
+          <div style="font-size:14px;font-weight:400;color:#8f8f8f;letter-spacing:-0.28px;line-height:18px;">and</div>
+          <div style="font-size:16px;font-weight:400;color:#212121;letter-spacing:-0.32px;line-height:20px;">Service is Invisalign</div>
+        </div>
       </div>
 
       <!-- Home Indicator -->
@@ -1200,8 +1200,9 @@
     function openFilter() {
       document.getElementById('filterDrawer').classList.add('open');
       var currentInbox = document.getElementById('headerTitle').textContent.trim();
-      document.getElementById('advancedFilterCard').style.display =
-        (currentInbox === 'Birdeye Smart Inbox') ? 'block' : 'none';
+      var isBirdeye = (currentInbox === 'Birdeye Smart Inbox');
+      document.getElementById('advancedFilterCard').style.display = isBirdeye ? 'block' : 'none';
+      document.getElementById('filterRows').style.display = isBirdeye ? 'none' : 'block';
 
       // Also sync filter values when drawer opens
       var preset = filterPresets[currentInbox] || {};
@@ -1278,9 +1279,10 @@
         }
       });
 
-      // Show advanced filter card only for Birdeye Smart Inbox
-      document.getElementById('advancedFilterCard').style.display =
-        (name === 'Birdeye Smart Inbox') ? 'block' : 'none';
+      // Show advanced filter card only for Birdeye Smart Inbox; hide regular rows
+      var isBirdeye = (name === 'Birdeye Smart Inbox');
+      document.getElementById('advancedFilterCard').style.display = isBirdeye ? 'block' : 'none';
+      document.getElementById('filterRows').style.display = isBirdeye ? 'none' : 'block';
 
       closeAll();
     }
